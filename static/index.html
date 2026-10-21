@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Study Buddy</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.js"></script>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <span class="logo">📚</span>
+        <span>Study Buddy</span>
+        <button class="icon-btn theme-toggle" id="themeToggle" title="Toggle theme">◐</button>
+      </div>
+
+      <label class="dropzone" id="dropzone">
+        <input type="file" id="fileInput" multiple hidden>
+        <div class="dz-icon">⬆</div>
+        <div class="dz-title">Drop files or click to upload</div>
+        <div class="dz-sub">PDF · Word · PowerPoint · Excel · Text · Images</div>
+        <div class="dz-sub">Several files at once become one study set</div>
+      </label>
+
+      <div class="status" id="statusBox"></div>
+
+      <h3 class="section-label">Your documents</h3>
+      <ul class="doc-list" id="docList"></ul>
+    </aside>
+
+    <main class="main">
+      <button class="icon-btn menu-btn" id="menuBtn" title="Documents">☰</button>
+
+      <section class="empty" id="emptyState">
+        <h1>Turn your course material into study notes</h1>
+        <p>Upload lecture slides, readings, textbooks or scanned handouts. You'll get a clear overview,
+          organised notes, key terms and likely exam points, and you can ask questions about the material.</p>
+        <ol class="steps">
+          <li><b>Upload</b> one or more files on the left</li>
+          <li><b>Read</b> the generated study guide</li>
+          <li><b>Ask</b> the document anything you're unsure about</li>
+        </ol>
+      </section>
+
+      <section class="doc-view hidden" id="docView">
+        <header class="doc-header">
+          <div>
+            <h1 id="docTitle"></h1>
+            <div class="doc-meta" id="docMeta"></div>
+          </div>
+        </header>
+
+        <nav class="tabs" role="tablist">
+          <button class="tab active" data-tab="notes">Notes</button>
+          <button class="tab" data-tab="chat">Ask the document</button>
+          <button class="tab" data-tab="source">Extracted text</button>
+        </nav>
+
+        <div class="tab-panel" id="tab-notes">
+          <div class="toolbar">
+            <button class="btn" id="regenBtn">↻ Regenerate</button>
+            <button class="btn" id="copyBtn">Copy</button>
+            <a class="btn" id="downloadBtn" download>Download .md</a>
+            <button class="btn" id="printBtn">Print / PDF</button>
+          </div>
+          <div class="progress hidden" id="progress">
+            <div class="progress-text" id="progressText">Starting…</div>
+            <div class="progress-bar"><div id="progressFill"></div></div>
+          </div>
+          <article class="markdown" id="notes"></article>
+        </div>
+
+        <div class="tab-panel hidden" id="tab-chat">
+          <div class="chat-log" id="chatLog"></div>
+          <div class="suggestions" id="suggestions">
+            <button class="chip">Explain the main concept in simple terms</button>
+            <button class="chip">What is most likely to come up in the exam?</button>
+            <button class="chip">Give me 5 practice questions with answers</button>
+            <button class="chip">What are the differences between the key ideas?</button>
+          </div>
+          <form class="chat-input" id="chatForm">
+            <textarea id="chatText" rows="1" placeholder="Ask anything about this document…"></textarea>
+            <button class="btn primary" type="submit" id="sendBtn">Send</button>
+          </form>
+        </div>
+
+        <div class="tab-panel hidden" id="tab-source">
+          <p class="hint">This is the text read from your files. If something is missing here, the notes can't include it.</p>
+          <pre class="source-text" id="sourceText"></pre>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast hidden" id="toast"></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>
