@@ -41,13 +41,14 @@ def _require(doc_id: str) -> dict:
     return store.load_meta(doc_id)
 
 
-def _overview(doc_id: str, segments: list[dict]) -> str:
+def _overview(doc_id: str) -> str:
     notes = store.load_notes(doc_id)
     if notes:
         m = re.search(r"##\s*Overview\s*\n(.*?)(?=\n##\s|\Z)", notes, re.S)
         if m:
             return m.group(1).strip()
-    return "\n".join(s["text"] for s in segments)[:1500]
+    # only read the full document from disk when there are no notes to use
+    return "\n".join(s["text"] for s in store.load_segments(doc_id))[:1500]
 
 
 # ---------- API ----------
@@ -178,7 +179,7 @@ def chat(doc_id: str, req: ChatRequest):
     hits = retriever.get_index(doc_id).search(query, k=6)
     context = "\n\n---\n\n".join(c.text for c in hits)
     system = prompts.CHAT_SYSTEM.format(
-        title=meta["title"], overview=_overview(doc_id, store.load_segments(doc_id)), context=context)
+        title=meta["title"], overview=_overview(doc_id), context=context)
     messages = [{"role": "system", "content": system}] + [m.model_dump() for m in history]
 
     def events():

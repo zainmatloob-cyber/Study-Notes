@@ -132,10 +132,10 @@ body {
 .markdown em { color: var(--muted); }
 .markdown ul, .markdown ol { padding-left: 22px; }
 .markdown li::marker { color: var(--accent); }
-.markdown table {
-  border-collapse: separate; border-spacing: 0; width: 100%; display: block; overflow-x: auto;
-  font-size: 14px; margin: 14px 0; border: 1px solid var(--border); border-radius: 8px;
+.markdown .table-wrap {
+  overflow-x: auto; margin: 14px 0; border: 1px solid var(--border); border-radius: 8px;
 }
+.markdown table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 14px; }
 .markdown th, .markdown td {
   border-bottom: 1px solid var(--border); padding: 8px 12px; text-align: left; vertical-align: middle;
 }

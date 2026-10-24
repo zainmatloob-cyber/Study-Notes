@@ -33,7 +33,10 @@ function md(text) {
         return `MATHPH${math.length - 1}X`;
       });
     }
-    const html = DOMPurify.sanitize(marked.parse(text));
+    const html = DOMPurify.sanitize(marked.parse(text))
+      // wrapper scrolls wide tables while the table itself stays full width
+      .replace(/<table>/g, '<div class="table-wrap"><table>')
+      .replace(/<\/table>/g, "</table></div>");
     return html.replace(/MATHPH(\d+)X/g, (_, i) => math[i]);
   }
   const pre = document.createElement("pre");
@@ -334,16 +337,21 @@ async function sendChat(text) {
   el.scrollIntoView({ block: "end" });
 
   const payload = msgs.slice(0, -1).filter((m) => !m.error).map(({ role, content }) => ({ role, content }));
+  // Re-rendering markdown on every token is O(n^2); render at most once per frame instead
+  let frame = 0;
+  const render = () => {
+    frame = 0;
+    if (state.current?.id !== doc.id) return;
+    el.innerHTML = md(reply.content);
+    const main = document.querySelector(".main");
+    main.scrollTop = main.scrollHeight;
+  };
   try {
     await streamEvents(`/api/docs/${doc.id}/chat`, { messages: payload }, (ev) => {
       if (ev.type === "sources") reply.sources = ev.sources;
       else if (ev.type === "delta") {
         reply.content += ev.text;
-        if (state.current?.id === doc.id) {
-          el.innerHTML = md(reply.content);
-          const main = document.querySelector(".main");
-          main.scrollTop = main.scrollHeight;
-        }
+        frame ||= requestAnimationFrame(render);
       } else if (ev.type === "error") {
         reply.content = ev.message;
         reply.error = true;
@@ -353,6 +361,7 @@ async function sendChat(text) {
     reply.content = e.message;
     reply.error = true;
   } finally {
+    cancelAnimationFrame(frame);
     state.busy = false;
     $("sendBtn").disabled = false;
     if (state.current?.id === doc.id) renderChat();
