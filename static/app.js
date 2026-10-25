@@ -237,7 +237,38 @@ function showNotes(markdown) {
   el.innerHTML = md(markdown);
   // make revision checklist interactive
   el.querySelectorAll('input[type="checkbox"]').forEach((cb) => cb.removeAttribute("disabled"));
+  styleCallouts(el);
+  wrapBeyond(el);
   el.dataset.raw = markdown;
+}
+
+// "> **Example:** ..." blockquotes become coloured callouts
+function styleCallouts(el) {
+  const kinds = { example: "example", intuition: "intuition", "watch out": "warn", tip: "intuition", note: "intuition" };
+  el.querySelectorAll("blockquote").forEach((bq) => {
+    const label = bq.querySelector("strong")?.textContent.replace(/:$/, "").trim().toLowerCase();
+    if (kinds[label]) bq.classList.add("callout", `callout-${kinds[label]}`);
+  });
+}
+
+// Group the "Beyond the Notes" section so it's visibly separate from the uploaded material
+function wrapBeyond(el) {
+  const h2 = [...el.querySelectorAll("h2")].find((h) => h.textContent.trim() === "Beyond the Notes");
+  if (!h2) return;
+  const box = document.createElement("section");
+  box.className = "beyond";
+  h2.before(box);
+  let next = h2;
+  while (next && !(next !== h2 && next.tagName === "H2")) {
+    const after = next.nextElementSibling;
+    box.appendChild(next);
+    next = after;
+  }
+  const note = document.createElement("p");
+  note.className = "beyond-note";
+  note.textContent = "Not from your uploaded files: related material from the AI's general knowledge. "
+    + "Check anything important against your course before relying on it in an exam.";
+  h2.after(note);
 }
 
 async function generateNotes(regenerate) {

@@ -12,6 +12,7 @@ REASONING_EFFORT = os.getenv("REASONING_EFFORT", "low")  # gpt-oss models only: 
 TESSERACT_CMD = os.getenv("TESSERACT_CMD", r"C:\Program Files\Tesseract-OCR\tesseract.exe")
 OCR_LANG = os.getenv("OCR_LANG", "eng")
 CHUNK_TOKENS = int(os.getenv("CHUNK_TOKENS", "3000"))
+NOTES_MAX_TOKENS = int(os.getenv("NOTES_MAX_TOKENS", "8000"))  # length cap for the final study guide
 
 DATA_DIR = BASE_DIR / "data"
 STATIC_DIR = BASE_DIR / "static"

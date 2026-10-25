@@ -11,6 +11,10 @@
   --warn-bg: #fff4d6;
   --warn-text: #7a5600;
   --code-bg: #f0efea;
+  --ok-bg: #e6f4ea;
+  --ok-line: #2b8a3e;
+  --beyond-bg: #f6f0ff;
+  --beyond-line: #7048e8;
   --radius: 10px;
 }
 @media (prefers-color-scheme: dark) {
@@ -18,12 +22,14 @@
     --bg: #18181a; --panel: #212124; --sidebar: #1c1c1f; --text: #ececea; --muted: #9b9a95;
     --border: #34343a; --accent: #8ea4ff; --accent-soft: #2a3150; --danger: #ff8787;
     --warn-bg: #3a3218; --warn-text: #f5d58a; --code-bg: #2a2a2e;
+    --ok-bg: #1f3326; --ok-line: #69db7c; --beyond-bg: #251f38; --beyond-line: #b197fc;
   }
 }
 :root[data-theme="dark"] {
   --bg: #18181a; --panel: #212124; --sidebar: #1c1c1f; --text: #ececea; --muted: #9b9a95;
   --border: #34343a; --accent: #8ea4ff; --accent-soft: #2a3150; --danger: #ff8787;
   --warn-bg: #3a3218; --warn-text: #f5d58a; --code-bg: #2a2a2e;
+  --ok-bg: #1f3326; --ok-line: #69db7c; --beyond-bg: #251f38; --beyond-line: #b197fc;
 }
 
 * { box-sizing: border-box; }
@@ -142,7 +148,8 @@ body {
 .markdown tr > :not(:last-child) { border-right: 1px solid var(--border); }
 .markdown tbody tr:last-child > * { border-bottom: none; }
 .markdown tbody tr:nth-child(even) { background: color-mix(in srgb, var(--code-bg) 45%, transparent); }
-.markdown th { background: var(--code-bg); font-weight: 650; }
+.markdown th { background: var(--accent-soft); font-weight: 650; }
+.markdown td:first-child { font-weight: 600; }
 /* math */
 .markdown .katex { font-size: 1.08em; }
 .markdown .katex-display {
@@ -156,7 +163,26 @@ body {
 .markdown li { margin: 3px 0; }
 .markdown input[type=checkbox] { margin-right: 6px; transform: translateY(1px); }
 .markdown li:has(> input[type=checkbox]) { list-style: none; margin-left: -20px; }
-.markdown blockquote { border-left: 3px solid var(--accent); margin: 0; padding-left: 12px; color: var(--muted); }
+.markdown blockquote { border-left: 3px solid var(--accent); margin: 12px 0; padding-left: 12px; color: var(--muted); }
+.markdown blockquote.callout {
+  color: var(--text); background: var(--callout-bg); border-left: 4px solid var(--callout-line);
+  border-radius: 0 8px 8px 0; padding: 8px 14px;
+}
+.markdown blockquote.callout p { margin: 6px 0; }
+.markdown blockquote.callout strong:first-child { color: var(--callout-line); }
+.callout-example   { --callout-bg: var(--accent-soft); --callout-line: var(--accent); }
+.callout-intuition { --callout-bg: var(--ok-bg);       --callout-line: var(--ok-line); }
+.callout-warn      { --callout-bg: var(--warn-bg);     --callout-line: var(--warn-text); }
+
+/* related material that is NOT from the uploaded files */
+.markdown .beyond {
+  margin: 40px 0 0; padding: 4px 20px 16px; border: 1px dashed var(--beyond-line);
+  border-radius: var(--radius); background: var(--beyond-bg);
+}
+.markdown .beyond h2 { margin-top: 18px; border-bottom-color: var(--beyond-line); }
+.markdown .beyond h2::before, .markdown .beyond li::marker { background: var(--beyond-line); color: var(--beyond-line); }
+.markdown .beyond h3 { color: var(--beyond-line); }
+.markdown .beyond-note { font-size: 13px; color: var(--muted); margin-top: -4px; }
 
 /* ---------- chat ---------- */
 .chat-log { display: flex; flex-direction: column; gap: 14px; margin-bottom: 14px; }
@@ -212,4 +238,18 @@ body {
   .main { overflow: visible; padding: 0; }
   .markdown { border: none; padding: 0; }
   body { background: #fff; color: #000; }
+  /* keep tinted headers, callouts and accent bars on paper */
+  .markdown { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  /* don't split rows, callouts or formulas across pages, or strand a heading at a page bottom */
+  .markdown tr, .markdown blockquote, .markdown .katex-display, .markdown li { break-inside: avoid; }
+  .markdown h2, .markdown h3 { break-after: avoid; }
+  .markdown .table-wrap { overflow: visible; }
+}
+/* print in light colours even when the app is in dark mode (same specificity, so this later rule wins) */
+@media print {
+  :root:not([data-theme="light"]) {
+    --bg: #fff; --panel: #fff; --text: #1d1d1b; --muted: #6b6a65; --border: #dddcd5;
+    --accent: #3b5bdb; --accent-soft: #e7ecff; --danger: #c92a2a; --warn-bg: #fff4d6; --warn-text: #7a5600;
+    --code-bg: #f0efea; --ok-bg: #e6f4ea; --ok-line: #2b8a3e; --beyond-bg: #f6f0ff; --beyond-line: #7048e8;
+  }
 }

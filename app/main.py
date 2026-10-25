@@ -11,11 +11,20 @@ from pydantic import BaseModel
 
 from . import config, llm, ocr, prompts, retriever, store
 from .extractors import SUPPORTED_EXTS, ExtractionError, extract
-from .summarizer import generate_notes
+from .summarizer import add_beyond, generate_notes, has_beyond
 
 MAX_UPLOAD_MB = 100
 
 app = FastAPI(title="Study Buddy")
+
+
+@app.middleware("http")
+async def revalidate_static(request, call_next):
+    # make browsers check for updated CSS/JS on every load instead of serving stale cached copies
+    response = await call_next(request)
+    if request.url.path == "/" or request.url.path.startswith("/static/"):
+        response.headers["Cache-Control"] = "no-cache"
+    return response
 
 
 # ---------- helpers ----------
@@ -140,6 +149,16 @@ def notes(doc_id: str, regenerate: bool = False):
         cached = None if regenerate else store.load_notes(doc_id)
         if cached:
             yield {"type": "notes", "markdown": cached, "cached": True}
+            if has_beyond(cached):
+                return
+            # notes made before the "Beyond the Notes" section existed: add just that section
+            yield {"type": "progress", "message": "Adding related material beyond your notes...", "done": 0, "total": 1}
+            try:
+                full = add_beyond(meta["title"], cached)
+            except llm.LLMError:
+                return
+            store.save_notes(doc_id, full)
+            yield {"type": "notes", "markdown": full, "cached": True}
             return
         for ev in generate_notes(meta["title"], store.load_segments(doc_id)):
             if ev["type"] == "notes":

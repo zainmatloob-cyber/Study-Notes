@@ -49,6 +49,9 @@ def _with_retry(fn, attempts: int = 6):
         except groq.AuthenticationError as e:
             raise LLMError("Groq rejected the API key. Check GROQ_API_KEY in .env.") from e
         except groq.APIStatusError as e:
+            if e.status_code == 413:
+                raise LLMError("Request too large for your Groq plan. Lower NOTES_MAX_TOKENS "
+                               "or CHUNK_TOKENS in .env and restart.") from e
             raise LLMError(f"Groq error {e.status_code}: {e.message}") from e
 
 

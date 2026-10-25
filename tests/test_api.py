@@ -64,6 +64,25 @@ def test_upload_notes_chat_flow(client, fixtures):
     assert client.get("/api/docs").json() == []
 
 
+def test_beyond_section_added_and_backfilled(client, fixtures):
+    with open(fixtures["txt"], "rb") as f:
+        doc_id = client.post("/api/upload", files=[("files", ("a.txt", f))]).json()["id"]
+
+    ev = _events(client.post(f"/api/docs/{doc_id}/notes"))
+    final = [e for e in ev if e["type"] == "notes"][-1]["markdown"]
+    assert final.count("## Beyond the Notes") == 1
+    assert "## Overview" in final.split("## Beyond the Notes")[0]
+
+    # notes saved before the feature existed get the section added once, then stay cached
+    store.save_notes(doc_id, "## Overview\nOld notes.")
+    ev = _events(client.post(f"/api/docs/{doc_id}/notes"))
+    assert [e for e in ev if e["type"] == "notes"][-1]["markdown"].startswith("## Overview\nOld notes.")
+    assert "## Beyond the Notes" in store.load_notes(doc_id)
+    n = len(client.calls)
+    client.post(f"/api/docs/{doc_id}/notes")
+    assert len(client.calls) == n
+
+
 def test_upload_rejects_bad_file(client):
     r = client.post("/api/upload", files=[("files", ("x.zip", b"PK"))])
     assert r.status_code == 422 and "Unsupported" in r.json()["detail"]
